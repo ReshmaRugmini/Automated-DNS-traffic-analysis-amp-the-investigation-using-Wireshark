@@ -1,0 +1,205 @@
+                         Python Studies
+
+
+###Creating python files##########################
+ Creating a python file on the server, using the .py file extension
+ eg: dns_materiels.py
+
+###Python indentation (space)##############################
+The indentation in Python is very important. Python uses indentation to indicate a block of code.
+if 10 > 5:
+  print("Ten greater than five")
+
+###Comment lines##################################
+Comments can be used to make the code more readable. Can start with "#" or (triple quotes) """  """.
+eg:-print("hello world") #print hello world   or   """ print hello world """
+
+###Variables#############################
+Variables are containers for storing data values.Variables are containers for storing data values.
+eg: a=5             a="set",          a=6.9
+    print(a)        print(a)          print(a)
+
+A variable name must start with a letter or the underscore character
+A variable name cannot start with a number
+A variable name can only contain alpha-numeric characters and underscores (A-z, 0-9, and _ )
+Variable names are case-sensitive (age, Age and AGE are three different variables)
+A variable name cannot be any of the Python keywords.
+eg:- x = "Python is simple"
+     print(x)
+
+###Python datatype#################################
+
+     Text Type:	str                                                             x = "Hello World"	str	
+Numeric Types:	int, float, complex                                             x = 20	int	
+Sequence Types:	list, tuple, range                                              x = 20.5	float
+  Mapping Type:	dict                                                            x = 1j	complex
+     Set Types:	set, frozenset                                                  x = ["apple", "banana", "cherry"]	list
+  Boolean Type:	bool                                                            x = ("apple", "banana", "cherry")	tuple
+  Binary Types:	bytes, bytearray, memoryview                                    x = range(6)	range
+                                                                                x = {"name" : "John", "age" : 36}	dict	
+                                                                                x = {"apple", "banana", "cherry"}	set	
+                                                                                x = frozenset({"apple", "banana", "cherry"})	frozenset	
+                                                                                x = True/False	bool	
+                                                                                x = b"Hello"	bytes	
+                                                                                x = bytearray(5)	bytearray	
+                                                                                x = memoryview(bytes(5))	memoryview	
+                                                                                          
+###Python number####################################
+There are three numeric types in Python:
+int                              x = 1    # int
+float                            y = 2.8  # float
+complex                          z = 1j   # complex
+
+###Python string#################################
+
+###Python operators##########################
+Python divides the operators in the following groups:
+
+***Arithmetic operators***                    
+Operator	Name	Example	
++	   Addition	        x + y	
+-	   Subtraction	    x - y	
+*	   Multiplication	x * y	
+/	    Division	    x / y	
+%	    Modulus	        x % y	
+**	   Exponentiation	x ** y	
+//	   Floor division	x // y
+***Assignment operators***
+Operator	Example	     Same as
+=	         x = 5	      x = 5	
++=	         x += 3	      x = x + 3	
+-=	         x -= 3	      x = x - 3	
+*=	         x *= 3	      x = x * 3	
+/=	         x /= 3	      x = x / 3	
+%=	         x %= 3	      x = x % 3	
+//=	         x //= 3	  x = x // 3	
+**=        	 x **= 3	  x = x ** 3	
+&=	         x &= 3	      x = x & 3	
+|=	         x |= 3	      x = x | 3	
+^=	         x ^= 3	      x = x ^ 3	
+>>=	         x >>= 3	  x = x >> 3	
+<<=	         x <<= 3	  x = x << 3	
+:=	      print(x := 3)	  x = 3
+                          print(x)
+***Comparison operators***     
+Operator	 Name	                      Example	
+==	         Equal	                       x == y	
+!=	         Not equal	                   x != y	
+>	         Greater than	               x > y	
+<	         Less than	                   x < y	
+>=	         Greater than or equal to	   x >= y	
+<=	         Less than or equal to	       x <= y                     
+***Logical operators***
+Operator	Description	                                    Example	
+and 	    Returns True if both statements are true	        x < 5 and  x < 10	
+or	    Returns True if one of the statements is true	   x < 5 or x < 4	
+not	    Reverse the result, returns False if the result 
+               is true.	                                 not(x < 5 and x < 10)
+Identity operators
+Membership operators
+Bitwise operators
+Operator	Name	                 Description	                                                Example
+& 	         AND	                 Sets each bit to 1 if both bits are 1	                        x & y	
+|	         OR	                     Sets each bit to 1 if one of two bits is 1                 	x | y	
+^	         XOR	                 Sets each bit to 1 if only one of two bits is 1	            x ^ y	
+~	         NOT	                 Inverts all the bits	~x	
+<<	         Zero fill left shift	   Shift left by pushing zeros in from the rightmost
+                                         and let the leftmost bits fall off                       	x << 2	
+>>	         Signed right shift	     Shift right by pushing copies of the leftmost              	x >> 2	
+                                        bit in from the left, and let the rightmost bits fall off
+
+def()- The def () keyword in python is used to define the function that 
+             users can use to built their own function.
+
+##Matplotlib##########################
+https://codedamn.com/news/python/change-matplotlib-figure-and-plot-size
+Matplotlib is an open-source plotting library for Python that provides a wide variety of static,
+animated, and interactive plots. It is a versatile library that can be used for various purposes 
+such as data visualization, model evaluation, and image processing.
+Most of the Matplotlib utilities lies under the pyplot submodule, and are usually imported under the plt alias:
+
+import matplotlib.pyplot as plt 
+The plot() function is used to draw points (markers) in a diagram.
+
+##Seaborn#######################
+
+Seaborn is a Python data visualization library based on matplotlib. 
+import seaborn as sns
+It provides a high-level interface for drawing attractive and informative statistical graphics.
+It will be used to visualize random distributions. It provides beautiful default styles and color palettes to make statistical plots more attractive. 
+It is built on the top of matplotlib library and also closely integrated to the data structures from pandas.
+seaborn.countplot() method is used to show the counts of observations in each categorical bin using bars.
+ https://www.geeksforgeeks.org/countplot-using-seaborn-in-python/
+ https://www.geeksforgeeks.org/barplot-using-seaborn-in-python/?ref=lbp   seaborn.barplot()
+ https://www.geeksforgeeks.org/scatterplot-using-seaborn-in-python/?ref=lbp  seaborn.scatterplot()
+ https://www.geeksforgeeks.org/how-to-make-histograms-with-density-plots-with-seaborn-histplot/?ref=lbp  seaborn.histplot()
+ https://www.geeksforgeeks.org/seaborn-heatmap-a-comprehensive-guide/?ref=lbp seaborn.heatmap()
+ https://www.geeksforgeeks.org/python-seaborn-pairplot-method/?ref=lbp seaborn.painplot()
+##Python conditions########################
+Python supports the usual logical conditions from mathematics:
+
+Equals: a == b
+Not Equals: a != b
+Less than: a < b
+Less than or equal to: a <= b
+Greater than: a > b
+Greater than or equal to: a >= b
+These conditions can be used in several ways, most commonly in "if statements" and loops.
+
+***if statement***
+a=4, b=2
+if a>b:
+ print("a greater than b")
+
+***Elif statement***
+The elif keyword is Python's way of 
+saying "if the previous conditions were not true, then try this condition".
+a = 33
+b = 33
+if b > a:
+  print("b is greater than a")
+elif a == b:
+  print("a and b are equal")
+
+***Else statement***
+a = 200
+b = 33
+if b > a:
+  print("b is greater than a")
+elif a == b:
+  print("a and b are equal")
+else:
+  print("a is greater than b")
+
+You can also have an else without the elif:
+a = 200
+b = 33
+if b > a:
+  print("b is greater than a")
+else:
+  print("b is not greater than a")
+
+***Nested if***
+x = 41
+if x > 10:
+  print("Above ten,")
+  if x > 20:
+    print("and also above 20!")
+  else:
+    print("but not above 20.")
+
+plt. figure(figsize=(width, height)) function.
+The nunique() method returns the number of unique values for each column.
+
+#####Django######################
+py -m pip install Django --https://www.w3schools.com/django/django_install_django.php
+django-admin --version
+Create project/dashboard- django-admin startproject my_name ---https://www.w3schools.com/django/django_create_project.php
+Navigate dashboard- C:\Users\reshm\OneDrive\Desktop\Reshma_python\django_dashboard> py manage.py runserver
+Dashboard_app-  C:\Users\reshm\OneDrive\Desktop\Reshma_python\django_dashboard> py manage.py startapp dashboard_app- https://www.w3schools.com/django/django_create_app.php
+An app is a web application that has a specific meaning in project, like a home page, a contact form, or a members database.
+Create an app that allows us to list and register members in a database.
+Django view- https://www.w3schools.com/django/django_views.php
+Django urls- https://www.w3schools.com/django/django_urls.php
+Django templates- https://www.w3schools.com/django/django_templates.php
+Django static files- https://www.w3schools.com/django/django_add_static_files.php
