@@ -55,12 +55,12 @@ main {
 }
 
 .gallery-item img {
-    max-width: 300px; 
+    max-width: 300px; /* Increase image size */
     border: 1px solid #ddd;
     border-radius: 4px;
     padding: 5px;
     background-color: #fff;
-    cursor: pointer; 
+    cursor: pointer; /* Change cursor to pointer */
 }
 
 .gallery-item img:hover {
