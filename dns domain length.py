@@ -2,25 +2,18 @@ import pyshark
 import matplotlib.pyplot as plt
 import seaborn as sns
 
-def read_pcapng(file_path):
-    """
-    Read DNS packets from a pcapng file.
-    """
-    capture = pyshark.FileCapture(file_path, display_filter='dns')
+def read_pcapng(file_path):   #Read DNS packets from a pcapng file.
+    
+    capture = pyshark.FileCapture(file_path, display_filter='dns') # Read pcap file and filterd DNs packets
     return capture
-    # Read pcap file and filterd DNs packets
-def analyze_dns_query_length(capture):
-    """
-    Analyze DNS query lengths from the captured packets.
-    """
+    
+def analyze_dns_query_length(capture):    #Analyze DNS query lengths from the captured packets.
+                                                  
     dns_queries = []
     for packet in capture:
         if hasattr(packet.dns, 'qry_name'):
-            dns_queries.append(packet.dns.qry_name)
-    """
-    captured packets extract DNS query name
-    """
-
+            dns_queries.append(packet.dns.qry_name) #captured packets extract DNS query name
+    
     query_length_results = []
     for query in dns_queries:
         query_length = len(query)
@@ -31,8 +24,7 @@ def analyze_dns_query_length(capture):
     return query_length_results
 
 if __name__ == "__main__":
-    # Read DNS traffic from a pcapng file
-    pcapng_file = 'capturefile.pcapng'
+    pcapng_file = 'capturefile.pcapng'   # Read DNS traffic from a pcapng file
     capture = read_pcapng(pcapng_file)
 
     # Analyze DNS query and its lengths from captured DNS packet
