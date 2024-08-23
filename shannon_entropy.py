@@ -35,7 +35,7 @@ def analyze_dns_entropy(capture):
     for query in dns_queries: #loop iterate over each DNS query in dns queries list
         entropy = shannon_entropy(query) # Using shannon_entropy fuct finding the entropy of DNS query
         entropy_results.append((query, entropy)) # contain query and entropy value as result
-        if entropy > 3.5:  
+        if entropy > 4.0:  
             # print(f"High entropy domain detected: {query} with entropy {entropy:.2f}")
             high_entropy.append((query, entropy))
     
@@ -78,7 +78,7 @@ if __name__ == "__main__":
     plt.show()
 
     # Pie Chart: Proportion of high entropy domains
-    labels = ['High Entropy (> 3.5)', 'Other Domains']
+    labels = ['High Entropy (> 4.0)', 'Other Domains']
     sizes = [len(high_entropy), len(entropy_results) - len(high_entropy)]
     colors = ['#ff9999','#66b3ff']
     
