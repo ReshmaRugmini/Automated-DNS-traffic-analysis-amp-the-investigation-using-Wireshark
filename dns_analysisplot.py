@@ -11,6 +11,11 @@ import math
 import datetime
 import asyncio
 
+dns_record_type_labels = {'1': 'A', '2': 'NS', '5': 'CNAME', '6': 'SOA', '12': 'PTR', '15': 'MX','16': 'TXT', 
+'28': 'AAAA', '33': 'SRV', '99': 'SPF', '257': 'CAA', '48': 'DNSKEY','46': 'RRSIG', '47': 'NSEC', '50': 'NSEC3',
+'52': 'TLSA', '55': 'HIP','56': 'NINFO','57': 'RKEY', '58': 'TALINK', '59': 'CDS', '60': 'CDNSKEY', '61': 'OPENPGPKEY',
+'62': 'CSYNC', '63': 'ZONEMD', '64': 'SVCB', '65': 'HTTPS', '99': 'SPF', '249': 'TKEY', '250': 'TSIG',}
+
 def read_pcapng(file_path):
     """
     Read DNS packets from a pcapng file.
@@ -121,6 +126,10 @@ def analyze_dns_signature(capture):
 
     record_type_counts = Counter(record_type for _, record_type in dns_record_types)
     domain_record_types = {query: record_type for query, record_type in dns_record_types}
+    
+    # Convert record type numeric values to labels
+    record_type_counts = {dns_record_type_labels.get(record_type, record_type): count for record_type, count in record_type_counts.items()}
+    domain_record_types = {query: dns_record_type_labels.get(record_type, record_type) for query, record_type in domain_record_types.items()}
 
     total_queries = len(dns_record_types)
     expected_frequency = total_queries / len(record_type_counts)
@@ -191,7 +200,7 @@ def analyze_dns_signature(capture):
 
     potential_tunneling = []
     for query, probabilities, entropy in char_freq_results:
-        if entropy > 3.5: 
+        if entropy > 4.0: 
             potential_tunneling.append(query)
 
     print("\nPotential DNS Tunneling Detected:")
@@ -257,89 +266,6 @@ def plot_time_intervals(intervals):
     plt.savefig('dashboard_app/static/plots/dns_time_intervals.png')
     plt.close()
 
-def char_frequency_probability(domain):
-    """
-    Calculate the probability of each character in the domain.
-    """
-    domain = domain.lower()
-    length = len(domain)
-    freq = Counter(domain)
-    probabilities = {char: count / length for char, count in freq.items()}
-    return probabilities
-
-
-def analyze_dns_char_freq(capture):
-    """
-    Analyze character frequency probabilities from the captured DNS packets.
-    """
-    dns_queries = []
-    for packet in capture:
-        if hasattr(packet.dns, 'qry_name'):
-            dns_queries.append(packet.dns.qry_name.lower())
-
-    char_freq_data = []
-    domain_lengths = []
-
-    for query in dns_queries:
-        probabilities = char_frequency_probability(query)
-        domain_lengths.append(len(query))
-        for char, prob in probabilities.items():
-            char_freq_data.append({'Domain': query, 'Character': char, 'Probability': prob})
-
-    return char_freq_data, domain_lengths
-
-def plot_character_frequency_distribution(df_char_freq):
-    """
-    Plot character frequency distribution.
-    """
-    plt.figure(figsize=(10, 6))
-    sns.histplot(df_char_freq['Probability'], kde=True, bins=30)
-    plt.title('Character Frequency Distribution')
-    plt.xlabel('Probability')
-    plt.ylabel('Frequency')
-    os.makedirs('dashboard_app/static/plots', exist_ok=True)
-    plt.savefig('dashboard_app/static/plots/char_frequency_distribution.png')
-    plt.close()
-
-def plot_domain_length_distribution(domain_lengths):
-    """
-    Plot domain length distribution.
-    """
-    plt.figure(figsize=(10, 6))
-    sns.histplot(domain_lengths, kde=True, bins=30)
-    plt.title('Domain Length Distribution')
-    plt.xlabel('Length')
-    plt.ylabel('Frequency')
-    os.makedirs('dashboard_app/static/plots', exist_ok=True)
-    plt.savefig('dashboard_app/static/plots/domain_length_distribution.png')
-    plt.close()
-
-def plot_character_frequency_heatmap(df_char_freq):
-    """
-    Plot character frequency heatmap.
-    """
-    char_matrix = df_char_freq.pivot_table(index='Domain', columns='Character', values='Probability', fill_value=0)
-    plt.figure(figsize=(12, 8))
-    sns.heatmap(char_matrix, cmap='viridis', cbar=True, linewidths=0.5)
-    plt.title('Character Frequency Heatmap')
-    os.makedirs('dashboard_app/static/plots', exist_ok=True)
-    plt.savefig('dashboard_app/static/plots/char_frequency_heatmap.png')
-    plt.close()
-
-def plot_top_n_frequent_characters(df_char_freq, n=10):
-    """
-    Plot top N most frequent characters.
-    """
-    top_chars = df_char_freq.groupby('Character')['Probability'].mean().sort_values(ascending=False).head(n)
-    plt.figure(figsize=(10, 6))
-    sns.barplot(x=top_chars.index, y=top_chars.values)
-    plt.title(f'Top {n} Most Frequent Characters')
-    plt.xlabel('Character')
-    plt.ylabel('Average Probability')
-    os.makedirs('dashboard_app/static/plots', exist_ok=True)
-    plt.savefig(f'dashboard_app/static/plots/top_{n}_frequent_characters.png')
-    plt.close()
-
 def shannon_entropy(domain):
     """
     Calculate the Shannon entropy of a domain.
@@ -365,7 +291,7 @@ def analyze_dns_entropy(capture):
     for query in dns_queries:
         entropy = shannon_entropy(query)
         entropy_results.append((query, entropy))
-        if entropy > 3.5:
+        if entropy > 4.0:
             high_entropy.append((query, entropy))
 
     return entropy_results, high_entropy
@@ -374,7 +300,7 @@ def plot(capture):
     # Ensure the directory exists
     os.makedirs('dashboard_app/static/plots', exist_ok=True)
     
-    dns_df = pd.read_csv('dns_captured.csv')
+    dns_df = pd.read_csv('dns_features.csv')
 
     print(dns_df.head())
     print(dns_df.describe())
@@ -382,113 +308,141 @@ def plot(capture):
 
     sns.set(style='whitegrid')
 
-    plt.figure(figsize=(10, 6))
-    if dns_df['Query Type'].nunique() > 1:
-        sns.countplot(x='Query Type', data=dns_df, palette='viridis')
-        plt.title('Distribution of DNS Query Types')
-        plt.xlabel('Query Type')
-        plt.ylabel('Count')
-        plt.xticks(rotation=45)
-        plt.tight_layout()
-        plt.savefig('dashboard_app/static/plots/dns_query_types.png')
-        plt.close()
-
-    plt.figure(figsize=(10, 6))
-    if dns_df['Response Code'].nunique() > 1:
-        sns.countplot(x='Response Code', data=dns_df, palette='coolwarm')
-        plt.title('Distribution of DNS Response Codes')
-        plt.xlabel('Response Code')
-        plt.ylabel('Count')
-        plt.xticks(rotation=45)
-        plt.tight_layout()
-        plt.savefig('dashboard_app/static/plots/dns_response_codes.png')
-        plt.close()
-
-    # Plot 3: Top 10 DNS Query Sources
-    top_sources = dns_df['Source IP'].value_counts().head(10)
-    plt.figure(figsize=(12, 8))
-    sns.barplot(x=top_sources.index, y=top_sources.values, palette='plasma')
-    plt.title('Top 10 DNS Query Sources')
-    plt.xlabel('Source IP')
-    plt.ylabel('Count')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig('dashboard_app/static/plots/dns_query_sources.png')
-    plt.close()
-
-    top_destinations = dns_df['Destination IP'].value_counts().head(10)
-    plt.figure(figsize=(12, 8))
-    sns.barplot(x=top_destinations.index, y=top_destinations.values, palette='inferno')
-    plt.title('Top 10 DNS Query Destinations')
-    plt.xlabel('Destination IP')
-    plt.ylabel('Count')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig('dashboard_app/static/plots/dns_query_destinations.png')
-    plt.close()
-
-    dns_df['Timestamp'] = pd.to_datetime(dns_df['Timestamp'])
-    dns_df.set_index('Timestamp', inplace=True)
-    daily_counts = dns_df.resample('D').size()
-    plt.figure(figsize=(12, 6))
-    daily_counts.plot(color='blue')
-    plt.title('DNS Query Count Over Time')
-    plt.xlabel('Date')
-    plt.ylabel('Count')
-    plt.tight_layout()
-    plt.savefig('dashboard_app/static/plots/dns_query_over_time.png')
-    plt.close()
-
-    plt.figure(figsize=(10, 6))
-    if dns_df['Query Class'].nunique() > 1:
-        sns.countplot(x='Query Class', data=dns_df, palette='cubehelix')
-        plt.title('Distribution of DNS Query Classes')
-        plt.xlabel('Query Class')
-        plt.ylabel('Count')
-        plt.xticks(rotation=45)
-        plt.tight_layout()
-        plt.savefig('dashboard_app/static/plots/dns_query_classes.png')
-        plt.close()
-
-    plt.figure(figsize=(12, 8))
-    sns.scatterplot(x='Source IP', y='Destination IP', data=dns_df, alpha=0.5)
-    plt.title('Distribution of DNS Queries by Source and Destination')
-    plt.xlabel('Source IP')
-    plt.ylabel('Destination IP')
-    plt.xticks(rotation=45)
-    plt.tight_layout()
-    plt.savefig('dashboard_app/static/plots/dns_source_destination.png')
-    plt.close()
-
-    dns_df['Query Length'] = dns_df['Query'].apply(len)
-    plt.figure(figsize=(10, 6))
-    sns.histplot(x='Query Length', data=dns_df, bins=20, kde=True, color='green')
-    plt.title('Distribution of DNS Query Length')
-    plt.xlabel('Query Length')
-    plt.ylabel('Count')
-    plt.tight_layout()
-    plt.savefig('dashboard_app/static/plots/dns_query_length.png')
-    plt.close()
-
-    plt.figure(figsize=(10, 8))
-    dns_types_codes = dns_df.groupby(['Query Type', 'Response Code']).size().unstack(fill_value=0)
-    if not dns_types_codes.empty:
-        sns.heatmap(dns_types_codes, cmap='YlGnBu', annot=True, fmt='d')
-        plt.title('Heatmap of DNS Query Types and Response Codes')
-        plt.xlabel('Response Code')
-        plt.ylabel('Query Type')
-        plt.tight_layout()
-        plt.savefig('dashboard_app/static/plots/dns_query_type_response_code_heatmap.png')
-        plt.close()
-
-    # Plot 10: Pairplot of DNS Features
-    sns.pairplot(dns_df[['Query Type', 'Query Class', 'Query Length']], palette='dark')
-    plt.suptitle('Pairplot of DNS Features', y=1.02)
-    plt.tight_layout()
-    plt.savefig('dashboard_app/static/plots/dns_features_pairplot.png')
-    plt.close()
-
     os.makedirs('dashboard_app/static/plots', exist_ok=True)
+
+    try:
+        plt.figure(figsize=(10, 6))
+        if dns_df['Query Type'].nunique() > 1:
+            sns.countplot(x='Query Type', data=dns_df, palette='viridis')
+            plt.title('Distribution of DNS Query Types')
+            plt.xlabel('Query Type')
+            plt.ylabel('Count')
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+            plt.savefig('dashboard_app/static/plots/dns_query_types.png')
+            plt.close()
+    except Exception as e:
+        print(f"Failed to plot DNS Query Types: {e}")
+
+    try:
+        plt.figure(figsize=(10, 6))
+        if dns_df['Response Code'].nunique() > 1:
+            sns.countplot(x='Response Code', data=dns_df, palette='coolwarm')
+            plt.title('Distribution of DNS Response Codes')
+            plt.xlabel('Response Code')
+            plt.ylabel('Count')
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+            plt.savefig('dashboard_app/static/plots/dns_response_codes.png')
+            plt.close()
+    except Exception as e:
+        print(f"Failed to plot DNS Response Codes: {e}")
+
+    try:
+        top_sources = dns_df['Source IP'].value_counts().head(10)
+        plt.figure(figsize=(12, 8))
+        sns.barplot(x=top_sources.index, y=top_sources.values, palette='plasma')
+        plt.title('Top 10 DNS Query Sources')
+        plt.xlabel('Source IP')
+        plt.ylabel('Count')
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.savefig('dashboard_app/static/plots/dns_query_sources.png')
+        plt.close()
+    except Exception as e:
+        print(f"Failed to plot Top 10 DNS Query Sources: {e}")
+
+    try:
+        top_destinations = dns_df['Destination IP'].value_counts().head(10)
+        plt.figure(figsize=(12, 8))
+        sns.barplot(x=top_destinations.index, y=top_destinations.values, palette='inferno')
+        plt.title('Top 10 DNS Query Destinations')
+        plt.xlabel('Destination IP')
+        plt.ylabel('Count')
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.savefig('dashboard_app/static/plots/dns_query_destinations.png')
+        plt.close()
+    except Exception as e:
+        print(f"Failed to plot Top 10 DNS Query Destinations: {e}")
+
+    try:
+        dns_df['Timestamp'] = pd.to_datetime(dns_df['Timestamp'])
+        dns_df.set_index('Timestamp', inplace=True)
+        daily_counts = dns_df.resample('D').size()
+        plt.figure(figsize=(12, 6))
+        daily_counts.plot(color='blue')
+        plt.title('DNS Query Count Over Time')
+        plt.xlabel('Date')
+        plt.ylabel('Count')
+        plt.tight_layout()
+        plt.savefig('dashboard_app/static/plots/dns_query_over_time.png')
+        plt.close()
+    except Exception as e:
+        print(f"Failed to plot DNS Query Count Over Time: {e}")
+
+    try:
+        plt.figure(figsize=(10, 6))
+        if dns_df['Query Class'].nunique() > 1:
+            sns.countplot(x='Query Class', data=dns_df, palette='cubehelix')
+            plt.title('Distribution of DNS Query Classes')
+            plt.xlabel('Query Class')
+            plt.ylabel('Count')
+            plt.xticks(rotation=45)
+            plt.tight_layout()
+            plt.savefig('dashboard_app/static/plots/dns_query_classes.png')
+            plt.close()
+    except Exception as e:
+        print(f"Failed to plot DNS Query Classes: {e}")
+
+    try:
+        plt.figure(figsize=(12, 8))
+        sns.scatterplot(x='Source IP', y='Destination IP', data=dns_df, alpha=0.5)
+        plt.title('Distribution of DNS Queries by Source and Destination')
+        plt.xlabel('Source IP')
+        plt.ylabel('Destination IP')
+        plt.xticks(rotation=45)
+        plt.tight_layout()
+        plt.savefig('dashboard_app/static/plots/dns_source_destination.png')
+        plt.close()
+    except Exception as e:
+        print(f"Failed to plot DNS Queries by Source and Destination: {e}")
+
+    try:
+        dns_df['Query Length'] = dns_df['Query'].apply(len)
+        plt.figure(figsize=(10, 6))
+        sns.histplot(x='Query Length', data=dns_df, bins=20, kde=True, color='green')
+        plt.title('Distribution of DNS Query Length')
+        plt.xlabel('Query Length')
+        plt.ylabel('Count')
+        plt.tight_layout()
+        plt.savefig('dashboard_app/static/plots/dns_query_length.png')
+        plt.close()
+    except Exception as e:
+        print(f"Failed to plot DNS Query Length: {e}")
+
+    try:
+        plt.figure(figsize=(10, 8))
+        dns_types_codes = dns_df.groupby(['Query Type', 'Response Code']).size().unstack(fill_value=0)
+        if not dns_types_codes.empty:
+            sns.heatmap(dns_types_codes, cmap='YlGnBu', annot=True, fmt='d')
+            plt.title('Heatmap of DNS Query Types and Response Codes')
+            plt.xlabel('Response Code')
+            plt.ylabel('Query Type')
+            plt.tight_layout()
+            plt.savefig('dashboard_app/static/plots/dns_query_type_response_code_heatmap.png')
+            plt.close()
+    except Exception as e:
+        print(f"Failed to plot Heatmap of DNS Query Types and Response Codes: {e}")
+
+    try:
+        sns.pairplot(dns_df[['Query Type', 'Query Class', 'Query Length']], palette='dark')
+        plt.suptitle('Pairplot of DNS Features', y=1.02)
+        plt.tight_layout()
+        plt.savefig('dashboard_app/static/plots/dns_features_pairplot.png')
+        plt.close()
+    except Exception as e:
+        print(f"Failed to plot Pairplot of DNS Features: {e}")
 
     # Read DNS traffic from a pcapng file
     # capture = read_pcapng(pcapng_file)
@@ -607,16 +561,10 @@ def plot(capture):
     intervals = analyze_time_intervals(timestamps)
     plot_time_intervals(intervals)
 
-    char_freq_data, domain_lengths = analyze_dns_char_freq(capture)
+    #char_freq_data, domain_lengths = analyze_dns_char_freq(capture)
 
     # Convert analysis results to DataFrame
-    df_char_freq = pd.DataFrame(char_freq_data)
-
-    # Generate and save plots
-    plot_character_frequency_distribution(df_char_freq)
-    plot_domain_length_distribution(domain_lengths)
-    plot_character_frequency_heatmap(df_char_freq)
-    plot_top_n_frequent_characters(df_char_freq)
+    #df_char_freq = pd.DataFrame(char_freq_data)
 
     entropy_results, high_entropy = analyze_dns_entropy(capture)
 
@@ -647,7 +595,7 @@ def plot(capture):
     plt.savefig('dashboard_app/static/plots/entropy_of_each_domain.png')
     plt.close()
 
-    labels = ['High Entropy (> 3.5)', 'Other Domains']
+    labels = ['High Entropy (> 4.0)', 'Other Domains']
     sizes = [len(high_entropy), len(entropy_results) - len(high_entropy)]
     colors = ['#ff9999','#66b3ff']
     explode = (0.1, 0)
@@ -670,8 +618,3 @@ def plot(capture):
     plt.tight_layout()
     plt.savefig('dashboard_app/static/plots/distribution_of_entropy_values.png')
     plt.close()
-
-
-
-    
-
